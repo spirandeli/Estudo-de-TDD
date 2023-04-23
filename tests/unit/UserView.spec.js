@@ -1,24 +1,60 @@
+jest.mock('@/store/actions')
 import VUserProfile from '@/components/VUserProfile'
 import VUserSearchForm from '@/components/VUserSearchForm'
+import actions from '@/store/actions'
+import initialState from '@/store/state'
 import UserView from '@/views/UserView'
-import { shallowMount } from '@vue/test-utils'
+import { createLocalVue, shallowMount } from '@vue/test-utils'
+import Vuex from 'vuex'
+import userFixture from './fixtures/user'
+
+const localVue = createLocalVue()
+localVue.use(Vuex)
 
 describe('UserView', () => {
-  it('Se o componente renderiza', () => {
+  let state
+
+  const build = () => {
+    const wrapper = shallowMount(UserView, {
+      localVue,
+      store: new Vuex.Store({ 
+        state,
+        actions,
+       })
+    })
+
+    return {
+      wrapper,
+      userSearchForm: () => wrapper.find(VUserSearchForm),
+      userProfile: () => wrapper.find(VUserProfile)
+    }
+  }
+
+  beforeEach(() => {
+    jest.resetAllMocks()
+    state = { ...initialState }
+  })
+
+  it('Confere o Usuario usado em userProfile', () => {
     // arrange
-    const wrapper = shallowMount(UserView)
+    state.user = userFixture
+    const { userProfile } = build()
 
     // assert
-    expect(wrapper.html()).toMatchSnapshot()
+    expect(userProfile().vm.user).toBe(state.user)
   })
-  it('Se os componentes estão sendo renderizados', () => {
+
+  
+  it('Procura por um Usuario quando der "submitted"', () => {
     // arrange
-    const wrapper = shallowMount(UserView)
-    const userSearchForm = wrapper.find(VUserSearchForm)
-    const userProfile = wrapper.find(VUserProfile)
+    const expectedUser = 'kuroski'
+    const { userSearchForm } = build()
+
+    // act
+    userSearchForm().vm.$emit('submitted', expectedUser)
 
     // assert
-    expect(userSearchForm.exists()).toBe(true)
-    expect(userProfile.exists()).toBe(true)
-  })
+    expect(actions.SEARCH_USER).toHaveBeenCalled()
+    expect(actions.SEARCH_USER.mock.calls[0][1]).toEqual({ username: expectedUser })
+  })  
 })

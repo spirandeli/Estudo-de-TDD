@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`UserView Se o componente renderiza 1`] = `
-<div>
-  Hello World
-  <vusersearchformvue-stub></vusersearchformvue-stub>
-  <vuserprofile-stub></vuserprofile-stub>
-</div>
-`;
